@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: portugal
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # We redirect to non-www if host is www.
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($host = 'www.coronastatus.pt') {
+        rewrite ^ https://coronastatus.pt$request_uri permanent;
+      }
+spec:
+  rules:
+  - host: coronastatus.pt
+    http:
+      paths:
+      - backend:
+          serviceName: goodbye
+          servicePort: 80
+  - host: www.coronastatus.pt
+    http:
+      paths:
+      - backend:
+          serviceName: goodbye
+          servicePort: 80
+  tls:
+  - hosts:
+    - coronastatus.pt
+    - www.coronastatus.pt
+    secretName: pt-coronastatus-cert-tls

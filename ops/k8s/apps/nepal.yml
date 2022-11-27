@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: nepal
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # We redirect to non-www if host is www.
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($host = 'www.coronastatusnp.com') {
+        rewrite ^ https://coronastatusnp.com$request_uri permanent;
+      }
+spec:
+  rules:
+  - host: coronastatusnp.com
+    http:
+      paths:
+      - backend:
+          serviceName: goodbye
+          servicePort: 80
+  - host: www.coronastatusnp.com
+    http:
+      paths:
+      - backend:
+          serviceName: goodbye
+          servicePort: 80
+  tls:
+  - hosts:
+    - coronastatusnp.com
+    - www.coronastatusnp.com
+    secretName: np-coronastatus-cert-tls

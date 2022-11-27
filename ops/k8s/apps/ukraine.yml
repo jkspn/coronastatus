@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ukraine
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # We redirect to non-www if host is www.
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      if ($host = 'www.coronastatus.org.ua') {
+        rewrite ^ https://coronastatus.org.ua$request_uri permanent;
+      }
+spec:
+  rules:
+  - host: coronastatus.org.ua
+    http:
+      paths:
+      - backend:
+          serviceName: goodbye
+          servicePort: 80
+  - host: www.coronastatus.org.ua
+    http:
+      paths:
+      - backend:
+          serviceName: goodbye
+          servicePort: 80
+  tls:
+  - hosts:
+    - coronastatus.org.ua
+    - www.coronastatus.org.ua
+    secretName: ua-coronastatus-cert-tls
